@@ -10,50 +10,54 @@ from scipy.stats import binom
 log = logging.getLogger(__name__)
 
 
-def truncation_with_mutation(population, fit_func, mutation_rate, mutation_func):
-    """Breed the next generation using a truncation selection algorithm with mutation.  The most fit
-    half of the population will survive to breeding age.  Each survivor will choose a spouse that is
-    not themselves at random and produce two children.  Each child will have mutation_rate chance
-    to mutate.
+def truncation_with_mutation(population, fit_func, mutation_rate, mutation_func, ratio=2):
+    """Breed the next generation using a truncation selection algorithm with mutation.
+
+    The most fit half of the population will survive to breeding age.  Each survivor will choose a
+    spouse that is not themselves at random and produce two children.  Each child will have
+    mutation_rate chance to mutate.
 
     Args:
         population: a list of Evolvers
         fit_func: the fitness function used to determine survivors from generation to generation
-        mutation_rate: chance for each reproduction event to trigger a mutation event
-        mutation_func: the function responsible for controlling mutation.  Takes one argument of:
-            a gene, a chromosome, or a genotype, depending on the context of the mutation.
+        mutation_rate: probability of each reproduction event triggering a mutation event
+        mutation_func: the function responsible for controlling mutation.
+        ratio: proportion of generation that survives to breeding age, integer >= 2, optional,
+            default 2
 
     Returns:
         the next generation of Evolvers
     """
-    new_population = truncation_selection(population, fit_func)
+    new_population = truncation_selection(population, fit_func, ratio=ratio)
 
     mutate(new_population, mutation_rate, mutation_func)
 
     return new_population
 
 
-def truncation_selection(population, fit_func):
-    """Breed the next generation using a truncation selection algorithm.  The most fit half of the
-    population will survive to breeding age.  Each survivor will choose a spouse that is not
-    themselves at random and produce two children.
+def truncation_selection(population, fit_func, ratio=2):
+    """Breed the next generation using a truncation selection algorithm.
+
+    The most fit 1/ratio of the population will survive to breeding age.  Each survivor will choose
+    a spouse that is not themselves at random and produce ratio children.
 
     Args:
         population: a list of Evolvers
         fit_func: the fitness function used to determine survivors from generation to generation
+        ratio: proportion of generation that survives to breeding age, integer >= 2, optional,
+            default 2
 
     Returns:
         the next generation of Evolvers
     """
-    num_survivors = len(population)//2
+    num_survivors = len(population)//ratio
     survivors = sorted(population, key=fit_func)[:num_survivors]
     spouses = deranged(survivors)  # guarantees no survivor will be paired with itself.
 
-    # Reversing the order for seconds helps with crossover reproduction methods.
-    firsts = [survivor.reproduce_with(spouse) for survivor, spouse in zip(survivors, spouses)]
-    seconds = [spouse.reproduce_with(survivor) for survivor, spouse in zip(survivors, spouses)]
-
-    new_population = firsts + seconds
+    new_population = []
+    for survivor, spouse in zip(survivors, spouses):
+        for _ in range(ratio):
+            new_population.append(survivor.reproduce_with(spouse))
 
     return new_population
 

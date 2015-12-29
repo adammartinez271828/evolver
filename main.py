@@ -39,10 +39,11 @@ def main():
         population = next_gen(population,
                               fit_func=calculate_fitness,
                               mutation_rate=MUTATION_RATE,
-                              mutation_func=lambda gene: randint(0, 50)
+                              mutation_func=lambda gene: randint(0, 50),
+                              ratio=3
                               )
         median_fitness = median([calculate_fitness(creature) for creature in population])
-        if median_fitness < FITNESS_THRESHOLD:
+        if median_fitness <= FITNESS_THRESHOLD:
             log.debug('Breaking on generation %d, mean fitness is %f.', current_generation,
                       median_fitness)
             break
