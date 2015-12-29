@@ -28,18 +28,13 @@ def main():
     if DUMP_POP:
         for filename in listdir('dmp'):
             remove(path.join('dmp', filename))
-        num = str(current_generation).zfill(len(str(MAX_GENERATIONS)))
-        dump_path = path.join('dmp', 'dmp_{}.txt'.format(num))
-        dump(dump_path, population)
+        dump(get_dump_path(current_generation), population)
 
     while current_generation < MAX_GENERATIONS:
         # log.debug('Population size: %d on generation: %d', len(population), current_generation)
         current_generation += 1
-        if current_generation % DUMP_INTERVAL == 0:
-            if DUMP_POP:
-                num = str(current_generation).zfill(len(str(MAX_GENERATIONS)))
-                dump_path = path.join('dmp', 'dmp_{}.txt'.format(num))
-                dump(dump_path, population)
+        if DUMP_POP & current_generation % DUMP_INTERVAL == 0:
+            dump(get_dump_path(current_generation), population)
 
         population = next_gen(population,
                               fit_func=calculate_fitness,
@@ -64,11 +59,26 @@ def calculate_fitness(creature):
         creature: a Prokaryote
 
     Returns:
-        fitness score: a positive float representing the fitness of the creature.  0 is perfect
+        fitness score: a positive integer representing the fitness of the creature.  0 is perfect
             fitness.
     """
     score = sum(creature.chromosome)
     return abs(170 - score)
+
+
+def get_dump_path(current_generation):
+    """Gets the path for a dumpfile at the current generation.
+
+    Generates filename such that the operating system can sort them in lexicographical order.
+
+    Args:
+        current_generation: generation for dumpfile
+
+    Returns:
+        system-specific path to dump a dumpfile, i.e. 'dmp/dmp_*.txt' or 'dmp\dmp_*.txt'
+    """
+    num = str(current_generation).zfill(len(str(MAX_GENERATIONS)))
+    return path.join('dmp', 'dmp_{}.txt'.format(num))
 
 
 def dump(filename, population, mode='w'):
@@ -77,7 +87,7 @@ def dump(filename, population, mode='w'):
     Args:
         filename: name of file to dump to
         population: list of Evolvers
-        mode: write mode, optional, defaults to 'a'
+        mode: write mode, optional, defaults to 'w'
     """
     with open(filename, mode=mode) as fd:
         out = ((calculate_fitness(creature), creature) for creature in population)
