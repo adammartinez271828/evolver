@@ -59,7 +59,7 @@ def truncation_selection(population, fit_func):
 
 
 def mutate(population, mutation_rate, mutation_func):
-    """
+    """Mutates each Evolver in population with fixed probability.
 
     Given a population of n creatures each with a p chance of mutation, the number of
     mutations in a given population obeys a binomial distribution.  i.e. given a population
