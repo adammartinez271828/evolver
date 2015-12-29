@@ -51,7 +51,7 @@ def truncation_selection(population, fit_func, ratio=2):
         the next generation of Evolvers
     """
     num_survivors = len(population)//ratio
-    survivors = sorted(population, key=fit_func)[:num_survivors]
+    survivors = sorted(population, key=fit_func, reverse=True)[:num_survivors]
     spouses = deranged(survivors)  # guarantees no survivor will be paired with itself.
 
     new_population = []

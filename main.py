@@ -14,7 +14,7 @@ log = logging.getLogger(__name__)
 
 MAX_GENERATIONS = 1000
 POP_SIZE = 100
-FITNESS_THRESHOLD = 1
+TARGET_FITNESS = 0.95
 MUTATION_RATE = 0.075
 DUMP_POP = True
 DUMP_INTERVAL = 100
@@ -43,28 +43,32 @@ def main():
                               ratio=3
                               )
         median_fitness = median([calculate_fitness(creature) for creature in population])
-        if median_fitness <= FITNESS_THRESHOLD:
-            log.debug('Breaking on generation %d, mean fitness is %f.', current_generation,
+        if median_fitness >= TARGET_FITNESS:
+            log.debug('Breaking on generation %d, median fitness is %f.', current_generation,
                       median_fitness)
             break
     else:
-        log.debug('Exceeding %d generations, mean fitness is %f.', MAX_GENERATIONS, median_fitness)
+        log.debug('Exceeding %d generations, median fitness is %f.', MAX_GENERATIONS,
+                  median_fitness)
 
     return population
 
 
 def calculate_fitness(creature):
-    """Calculates the fitness of a creature.  A lower score is better.
+    """Calculates the fitness of a creature.
+
+    Ideally, this should be a function continuous on (0, 1] where higher scores represent
+    better fitness.
 
     Args:
         creature: a Prokaryote
 
     Returns:
-        fitness score: a positive integer representing the fitness of the creature.  0 is perfect
-            fitness.
+        a positive float <= 1 representing the fitness of the creature.
     """
-    score = sum(creature.chromosome)
-    return abs(170 - score)
+    target_value = 170
+    score = abs(target_value - sum(creature.chromosome))
+    return target_value / (score + target_value)
 
 
 def get_dump_path(current_generation):
@@ -92,7 +96,7 @@ def dump(filename, population, mode='w'):
     """
     with open(filename, mode=mode) as fd:
         out = ((calculate_fitness(creature), creature) for creature in population)
-        for score, creature in sorted(out, key=lambda x: x[0]):
+        for score, creature in sorted(out, key=lambda x: x[0], reverse=True):
             fd.write('{}: {}'.format(score, creature) + '\n')
 
 
@@ -100,6 +104,6 @@ if __name__ == '__main__':
     results = main()
     log.debug('Dumping current population and fitnesses:')
     results = [(calculate_fitness(creature), creature)
-               for creature in sorted(results, key=calculate_fitness)]
-    log.debug('\n    ' + '\n    '.join(('{}: {}'.format(fitness, creature)
+               for creature in sorted(results, key=calculate_fitness, reverse=True)]
+    log.debug('\n    ' + '\n    '.join(('{0:0.3f}: {1}'.format(fitness, creature)
                                         for fitness, creature in results)))
