@@ -2,7 +2,7 @@
 import logging
 from os import listdir, path, remove
 from random import randint
-from statistics import mean
+from statistics import median
 
 # from evolution_algorithms import truncation_selection as next_gen
 from evolution_algorithms import truncation_with_mutation as next_gen
@@ -46,13 +46,13 @@ def main():
                               mutation_rate=MUTATION_RATE,
                               mutation_func=lambda gene: randint(0, 50)
                               )
-        mean_fitness = mean([calculate_fitness(creature) for creature in population])
-        if mean_fitness < FITNESS_THRESHOLD:
+        median_fitness = median([calculate_fitness(creature) for creature in population])
+        if median_fitness < FITNESS_THRESHOLD:
             log.debug('Breaking on generation %d, mean fitness is %f.', current_generation,
-                      mean_fitness)
+                      median_fitness)
             break
     else:
-        log.debug('Exceeding %d generations, mean fitness is %f.', MAX_GENERATIONS, mean_fitness)
+        log.debug('Exceeding %d generations, mean fitness is %f.', MAX_GENERATIONS, median_fitness)
 
     return population
 
