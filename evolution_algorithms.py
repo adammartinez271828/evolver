@@ -53,7 +53,7 @@ def fitness_proportional_selection(population, fit_func):
     # Precompute fit_func since we are going to be calling it a lot.
     pop_with_fitness = [(fit_func(creature), creature) for creature in population]
     total_fitness = sum(fitness for fitness, creature in pop_with_fitness)
-    log.debug('Total pop fitness: %d', total_fitness)
+    # log.debug('Total pop fitness: %d', total_fitness)
 
     new_population = []
     for _ in range(len(population)):
