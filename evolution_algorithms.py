@@ -99,6 +99,9 @@ def truncation_selection(population, fit_func, ratio=2):
     for survivor, spouse in zip(survivors, spouses):
         for _ in range(ratio):
             new_population.append(survivor.reproduce_with(spouse))
+    while len(new_population) < len(population):
+        # In the case where population % ratio != 0, you may need to generate a few extra children.
+        new_population.append(survivor.reproduce_with(spouse))
 
     return new_population
 
