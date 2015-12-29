@@ -33,7 +33,7 @@ def main():
     while current_generation < MAX_GENERATIONS:
         # log.debug('Population size: %d on generation: %d', len(population), current_generation)
         current_generation += 1
-        if DUMP_POP & current_generation % DUMP_INTERVAL == 0:
+        if DUMP_POP & (current_generation % DUMP_INTERVAL == 0):
             dump(get_dump_path(current_generation), population)
 
         population = next_gen(population,
