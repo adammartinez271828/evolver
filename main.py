@@ -5,7 +5,8 @@ from random import randint
 from statistics import median
 
 # from evolution_algorithms import truncation_selection as next_gen
-from evolution_algorithms import truncation_with_mutation as next_gen
+# from evolution_algorithms import truncation_with_mutation as next_gen
+from evolution_algorithms import fitness_proportional_selection as next_gen
 from evolvers import Prokaryote
 
 
@@ -28,19 +29,18 @@ def main():
     if DUMP_POP:
         for filename in listdir('dmp'):
             remove(path.join('dmp', filename))
-        dump(get_dump_path(current_generation), population)
 
     while current_generation < MAX_GENERATIONS:
         # log.debug('Population size: %d on generation: %d', len(population), current_generation)
-        current_generation += 1
         if DUMP_POP & (current_generation % DUMP_INTERVAL == 0):
             dump(get_dump_path(current_generation), population)
+        current_generation += 1
 
         population = next_gen(population,
                               fit_func=calculate_fitness,
-                              mutation_rate=MUTATION_RATE,
-                              mutation_func=lambda gene: randint(0, 50),
-                              ratio=3
+                              # mutation_rate=MUTATION_RATE,
+                              # mutation_func=lambda gene: randint(0, 50),
+                              # ratio=3
                               )
         median_fitness = median([calculate_fitness(creature) for creature in population])
         if median_fitness >= TARGET_FITNESS:

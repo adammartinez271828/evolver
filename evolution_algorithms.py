@@ -3,7 +3,7 @@ and this is intended to be a dropzone for different ones that can be imported in
 projects."""
 from copy import deepcopy
 import logging
-from random import sample, shuffle
+from random import choice, random, sample, shuffle
 
 from scipy.stats import binom
 
@@ -31,6 +31,47 @@ def truncation_with_mutation(population, fit_func, mutation_rate, mutation_func,
     new_population = truncation_selection(population, fit_func, ratio=ratio)
 
     mutate(new_population, mutation_rate, mutation_func)
+
+    return new_population
+
+
+def fitness_proportional_selection(population, fit_func):
+    """Breed the next generation using fitness proportional selection.
+
+    Each Evolver's probability of being selected for a reproduction event is proportional to their
+    fitness.  Given an Evolver E with fitness fe and n other Evolvers with fitnesses f1, f2 ... fn,
+    then E's chance of reproducing is:
+        fe / (f1 + f2 + ... + fn + fe)
+    Note that this does not work when minimizing fitness.
+
+    Args:
+        population: a list of Evolvers
+        fit_func: the fitness function used to determine survivors from generation to generation
+    """
+    # Going to implement this in the most straightforward way.
+    # TODO: Fix inefficient looping in Fitness-Proportional Selection
+    # Precompute fit_func since we are going to be calling it a lot.
+    pop_with_fitness = [(fit_func(creature), creature) for creature in population]
+    total_fitness = sum(fitness for fitness, creature in pop_with_fitness)
+    log.debug('Total pop fitness: %d', total_fitness)
+
+    new_population = []
+    for _ in range(len(population)):
+        while True:
+            fitness, father = choice(pop_with_fitness)
+            selection_chance = fitness/total_fitness
+            # log.debug('Father selection chance: %f', selection_chance)
+            if random() < selection_chance:
+                # log.debug('Father selected.')
+                break
+        while True:
+            fitness, mother = choice(pop_with_fitness)
+            selection_chance = fitness/total_fitness
+            # log.debug('Mother selection chance: %f', selection_chance)
+            if random() < selection_chance and mother is not father:
+                # log.debug('Mother selected.')
+                break
+        new_population.append(father.reproduce_with(mother))
 
     return new_population
 
