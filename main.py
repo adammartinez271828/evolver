@@ -1,5 +1,6 @@
 """Main module to execute a genetic algorithm to create creatures with genomes that sum to 170."""
 import logging
+from os import listdir, path, remove
 from random import randint
 from statistics import mean
 
@@ -15,6 +16,8 @@ MAX_GENERATIONS = 1000
 POP_SIZE = 100
 FITNESS_THRESHOLD = 1
 MUTATION_RATE = 0.075
+DUMP_POP = True
+DUMP_INTERVAL = 100
 
 
 def main():
@@ -22,10 +25,22 @@ def main():
     population = [Prokaryote([randint(0, 50) for _ in range(10)]) for __ in range(POP_SIZE)]
 
     current_generation = 0
+    if DUMP_POP:
+        for filename in listdir('dmp'):
+            remove(path.join('dmp', filename))
+        num = str(current_generation).zfill(len(str(MAX_GENERATIONS)))
+        dump_path = path.join('dmp', 'dmp_{}.txt'.format(num))
+        dump(dump_path, population)
 
     while current_generation < MAX_GENERATIONS:
         # log.debug('Population size: %d on generation: %d', len(population), current_generation)
         current_generation += 1
+        if current_generation % DUMP_INTERVAL == 0:
+            if DUMP_POP:
+                num = str(current_generation).zfill(len(str(MAX_GENERATIONS)))
+                dump_path = path.join('dmp', 'dmp_{}.txt'.format(num))
+                dump(dump_path, population)
+
         population = next_gen(population,
                               fit_func=calculate_fitness,
                               mutation_rate=MUTATION_RATE,
@@ -56,9 +71,24 @@ def calculate_fitness(creature):
     return abs(170 - score)
 
 
+def dump(filename, population, mode='w'):
+    """Dumps the population to a file for later analysis.
+
+    Args:
+        filename: name of file to dump to
+        population: list of Evolvers
+        mode: write mode, optional, defaults to 'a'
+    """
+    with open(filename, mode=mode) as fd:
+        out = ((calculate_fitness(creature), creature) for creature in population)
+        for score, creature in sorted(out, key=lambda x: x[0]):
+            fd.write('{}: {}'.format(score, creature) + '\n')
+
+
 if __name__ == '__main__':
     results = main()
-    # log.debug('Dumping current population and fitnesses:')
-    # results = [(creature, calculate_fitness(creature))
-    #              for creature in sorted(results, key=calculate_fitness)]
-    # log.debug('\n    ' + '\n    '.join(('{}: {}'.format(c, f) for c, f in results)))
+    log.debug('Dumping current population and fitnesses:')
+    results = [(calculate_fitness(creature), creature)
+               for creature in sorted(results, key=calculate_fitness)]
+    log.debug('\n    ' + '\n    '.join(('{}: {}'.format(fitness, creature)
+                                        for fitness, creature in results)))

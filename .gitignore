@@ -1,2 +1,5 @@
+# Ignore any dumpfiles created by main.
+dmp_*.txt
+
 # Ignore pycache files.
 __pycache__/*
