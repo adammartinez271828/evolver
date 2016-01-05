@@ -1,7 +1,6 @@
 """Module to encapsulate various genetic algorithms.  There is a wide variety of genetic algorithms
 and this is intended to be a dropzone for different ones that can be imported into other
 projects."""
-from copy import deepcopy
 import logging
 from random import choice, random, sample, shuffle
 
@@ -143,10 +142,10 @@ def deranged(iterable):
     Returns
         a deranged list of items in iterable
     """
-    deranged_copy = deepcopy(iterable)
+    deranged_copy = iterable.copy()
     while True:
         shuffle(deranged_copy)
-        matches = [a == b for a, b in zip(iterable, deranged_copy)]
+        matches = (a == b for a, b in zip(iterable, deranged_copy))
         if not any(matches):
             break
 
